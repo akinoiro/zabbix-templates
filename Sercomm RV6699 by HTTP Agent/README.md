@@ -1,6 +1,8 @@
 # Zabbix Template for Sercomm RV6699
 This template uses the HTTP Agent to collect data by extracting values from the router’s web interface.
 
+Tested on SERCOMM RV6699, Firmware Version sc3.3.46, Hardware Version v3
+
 ## Collected metrics
 CPU – Processor load in %
 
