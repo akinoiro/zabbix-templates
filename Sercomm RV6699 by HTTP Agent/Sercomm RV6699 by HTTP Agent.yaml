@@ -1,0 +1,135 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: 36bff6c29af64692839d077febfc7079
+      name: 'Templates/Network devices'
+  templates:
+    - uuid: f35212c1dd2b4af8b49ac6f53775975a
+      template: 'Sercomm RV6699 by HTTP Agent'
+      name: 'Sercomm RV6699 by HTTP Agent'
+      groups:
+        - name: 'Templates/Network devices'
+      items:
+        - uuid: 53df09dcf5ab451bb5b53b82aaee5ab9
+          name: CPU
+          type: DEPENDENT
+          key: cpu
+          value_type: FLOAT
+          units: '%'
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - '<td[^>]*>CPU<\/td>[\s\S]*?<td[^>]*>\s*([\d.]+)%'
+                - \1
+          master_item:
+            key: http_general_stats
+        - uuid: de89f5ce94b442908ff232017adfa230
+          name: raw_http
+          type: HTTP_AGENT
+          key: http
+          value_type: TEXT
+          authtype: BASIC
+          username: '{$USER}'
+          password: '{$PASSWORD}'
+          url: 'http://{HOST.IP}'
+        - uuid: 81fc61659983444ba5406af37fe762be
+          name: raw_http_general_stats
+          type: HTTP_AGENT
+          key: http_general_stats
+          value_type: TEXT
+          authtype: BASIC
+          username: '{$USER}'
+          password: '{$PASSWORD}'
+          url: 'http://{HOST.IP}/general_stats.htm'
+        - uuid: 1a9cad3fe55b47d99ff4c6efddd88435
+          name: 'Internet State'
+          type: DEPENDENT
+          key: internet.state
+          value_type: TEXT
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - 'Internet<\/td>[\s\S]*?<td[^>]*>[\s\S]*?show_string\("([^"]+)"\);'
+                - \1
+          master_item:
+            key: http
+          triggers:
+            - uuid: e6e76a1c72bf4e5fb3d51f8623d4d120
+              expression: 'last(/Sercomm RV6699 by HTTP Agent/internet.state,#1)<>"Up"'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'last(/Sercomm RV6699 by HTTP Agent/internet.state,#1)="Up"'
+              name: 'Internet state problem'
+              priority: HIGH
+        - uuid: 5ae7e14a90134070ab5bd02b240ad255
+          name: 'IP Address'
+          type: DEPENDENT
+          key: ip.address
+          value_type: TEXT
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - '<td[^>]*>IP Address<\/td>[\s\S]*?<td[^>]*>(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})<\/td>'
+                - \1
+          master_item:
+            key: http
+        - uuid: 307fcdb9164a4a05a14691d008861406
+          name: 'IPv6 Address'
+          type: DEPENDENT
+          key: ipv6.address
+          value_type: TEXT
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - '<td[^>]*>IPv6 Address<\/td>[\s\S]*?<td[^>]*>([0-9a-fA-F:]+)<\/td>'
+                - \1
+          master_item:
+            key: http
+        - uuid: 886694d042dc46a3b2d6ca33ec28efd6
+          name: 'Time Since Last Boot'
+          type: DEPENDENT
+          key: last_boot
+          value_type: TEXT
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - '<td[^>]*>Time Since Last Boot<\/td>[\s\S]*?<td[^>]*>\s*([\d:]+)'
+                - \1
+          master_item:
+            key: http_general_stats
+        - uuid: 07ddd3e8c2c9471bb3e8cd29f3eb1522
+          name: Memory
+          type: DEPENDENT
+          key: memory
+          value_type: FLOAT
+          units: '%'
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - '<td[^>]*>Memory<\/td>[\s\S]*?<td[^>]*>\s*([\d.]+)%'
+                - \1
+          master_item:
+            key: http_general_stats
+        - uuid: 3a402dc9aaff471e87e7c95cd28f6907
+          name: 'PON State'
+          type: DEPENDENT
+          key: pon.state
+          value_type: TEXT
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - 'PON State<\/td>[\s\S]*?<td[^>]*>[\s\S]*?show_string\("([^"]+)"\);'
+                - \1
+          master_item:
+            key: http
+          triggers:
+            - uuid: 38c2145793f343f2936cebc44fe09422
+              expression: 'last(/Sercomm RV6699 by HTTP Agent/pon.state,#1)<>"Up(O5)"'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'last(/Sercomm RV6699 by HTTP Agent/pon.state,#1)="Up(O5)"'
+              name: 'PON state problem'
+              priority: DISASTER
+      macros:
+        - macro: '{$PASSWORD}'
+          value: admin
+        - macro: '{$USER}'
+          value: admin
