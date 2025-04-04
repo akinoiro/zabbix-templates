@@ -92,7 +92,7 @@ zabbix_export:
           preprocessing:
             - type: REGEX
               parameters:
-                - '<td[^>]*>Time Since Last Boot<\/td>[\s\S]*?<td[^>]*>\s*([\d:]+)'
+                - '<td[^>]*>Time Since Last Boot<\/td>[\s\S]*?<td[^>]*>\s*([^<]+)'
                 - \1
           master_item:
             key: http_general_stats
